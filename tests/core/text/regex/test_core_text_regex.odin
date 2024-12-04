@@ -974,6 +974,18 @@ test_creation_from_user_string :: proc(t: ^testing.T) {
 		_, err := regex.create_by_user(USER_EXPR)
 		testing.expect_value(t, err, regex.Creation_Error.Unknown_Flag)
 	}
+	{
+		USER_EXPR :: `/foo/g`
+		STR :: "foo|foo"
+		rex, err := regex.create_by_user(USER_EXPR)
+		defer regex.destroy(rex)
+		testing.expect_value(t, err, nil)
+
+		capture, ok := regex.match(rex, STR)
+		regex.destroy(capture)
+		testing.expect_value(t, ok, true)
+		testing.expectf(t, len(capture.groups) == 2, "expexted len of groups == 2, but got: %v", len(capture.groups))
+	}
 }
 
 
@@ -1079,4 +1091,10 @@ test_preallocated_capture :: proc(t: ^testing.T) {
 	for groups in capture.groups[3:] {
 		testing.expect_value(t, groups, "")
 	}
+}
+
+@test
+test_global_flag :: proc(t: ^testing.T) {
+	EXPR :: `foo`
+	check_expression(t, EXPR, "foo|foo", "foo", "foo")
 }
